@@ -30,3 +30,8 @@ qa-*.png
 .browser-cache/
 
 .tmp/
+
+backend-public/
+.vercel/
+.env*
+!.env.example

@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "regions": ["iad1"],
+  "buildCommand": "node scripts/build-backend.mjs",
+  "outputDirectory": "backend-public",
+  "functions": { "api/inquiry.js": { "maxDuration": 60 } }
+}

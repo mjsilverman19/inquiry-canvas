@@ -38,12 +38,7 @@ export function validateSession(value) {
   }
   return { version: 2, title: typeof value.title === 'string' ? value.title : 'Imported inquiry', nodes: value.nodes };
 }
-export function parseResult(text) {
-  const cleaned = text.replace(/<think>[\s\S]*?<\/think>/g, '').replace(/```(?:json)?/g, '').trim();
-  const start = cleaned.indexOf('{'), end = cleaned.lastIndexOf('}');
-  if (start < 0) throw new Error('The model returned an incomplete response. Retry or write an answer yourself.');
-  try { return JSON.parse(cleaned.slice(start, end + 1)); } catch { throw new Error('The model returned invalid JSON. Retry or write an answer yourself.'); }
-}
+export { parseResult } from '../backend/lib/results.js';
 export const EXAMPLE = { version: 2, title: 'What makes a city worth living in?', nodes: [
   { id: 'q1', type: 'question', title: 'What makes a city worth living in?', content: 'What makes a city worth living in?', parentId: null, framings: [{ title: 'Everyday life', sketch: 'Start with the conditions that let ordinary days go well.' }, { title: 'Political agency', sketch: 'Ask who can shape the city and whose preferences count.' }, { title: 'Belonging', sketch: 'Examine the relationships and institutions that make a place feel like home.' }] },
   { id: 'a1', type: 'answer', parentId: 'q1', title: 'A city measured in ordinary days', framing: 'Everyday life', content: 'One useful starting point is the ordinary day: whether housing, movement, work, care, and sociability can coexist without consuming all of a person’s time or income. A city’s attractions matter less if the conditions of access exclude the people who sustain it.\n\nThis makes proximity and affordability joint requirements. Density can put more opportunities within reach, yet scarcity can make that reach expensive. The question becomes how a city distributes both access and the power to remain.', concepts: ['access', 'belonging'], tensions: [{ title: 'Proximity versus affordability', content: 'The neighborhoods with the richest access can become the least accessible to people with low incomes.' }], suggestions: ['Who should have the power to shape a neighborhood?', 'Can density improve access without displacement?'] },

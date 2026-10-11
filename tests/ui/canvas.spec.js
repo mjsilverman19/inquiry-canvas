@@ -45,11 +45,33 @@ test('mobile and dark theme have no document overflow or JS errors', async ({ pa
   await page.screenshot({path:'qa-mobile.png',fullPage:true});
   expect(errors).toEqual([]);
 });
-test('unsupported GPU reports a recoverable load error', async ({ page }) => {
-  await page.addInitScript(()=>Object.defineProperty(navigator,'gpu',{value:undefined}));
+test('hosted setup reports a recoverable configuration error', async ({ page }) => {
   await page.goto('');
   await page.getByRole('button', {name:'AI settings',exact:true}).click();
-  await page.getByRole('button', {name:'Download and load model'}).click();
-  await expect(page.getByRole('alert')).toContainText('needs WebGPU');
-  await expect(page.getByRole('button', {name:'Download and load model'})).toBeEnabled();
+  await page.getByLabel('Access code', {exact:true}).fill('test-only-long-access-code');
+  await page.getByRole('button', {name:'Connect hosted AI',exact:true}).click();
+  await expect(page.getByRole('alert')).toContainText('hosted backend URL');
+  await expect(page.getByRole('button', {name:'Connect hosted AI',exact:true})).toBeEnabled();
+});
+test('hosted AI produces framings and answers without model downloads', async ({ page }) => {
+  const requests=[];
+  await page.route('https://example-backend.test/api/inquiry', async route => {
+    if (route.request().method() === 'OPTIONS') return route.fulfill({status:204, headers:{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST','Access-Control-Allow-Headers':'Content-Type,Authorization'}});
+    const body=route.request().postDataJSON(); requests.push(body);
+    const reply=body.kind==='connect' ? {ready:true,model:'Test hosted model'} : body.kind==='framings' ? {result:{framings:[{title:'Institutions',sketch:'Examine institutions.'},{title:'Relationships',sketch:'Examine relationships.'}]}} : {result:{title:'A hosted answer',paragraphs:['An institutional answer.'],concepts:['institutions'],tensions:[],suggestions:['What institutions matter?']}};
+    return route.fulfill({status:200,contentType:'application/json',headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify(reply)});
+  });
+  await page.goto('');
+  await page.getByRole('button', {name:'AI settings',exact:true}).click();
+  await page.getByLabel('Backend URL').fill('https://example-backend.test/api/inquiry');
+  await page.getByLabel('Access code', {exact:true}).fill('test-only-long-access-code');
+  await page.getByRole('button', {name:'Connect hosted AI',exact:true}).click();
+  await expect(page.getByRole('button', {name:'AI ready',exact:true})).toBeVisible();
+  await page.getByLabel('Question', {exact:true}).fill('How do cities preserve belonging?');
+  await page.getByRole('button', {name:'Ask →',exact:true}).click();
+  await expect(page.locator('.framing')).toHaveCount(2);
+  await page.locator('.framing').first().click();
+  await expect(page.locator('.inspector')).toContainText('An institutional answer.');
+  expect(requests.map(r=>r.kind)).toEqual(['connect','framings','answer']);
+  await expect(page.locator('.node')).toHaveCount(2);
 });
