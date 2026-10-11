@@ -49,9 +49,9 @@ test('hosted setup reports a recoverable configuration error', async ({ page }) 
   await page.goto('');
   await page.getByRole('button', {name:'AI settings',exact:true}).click();
   await page.getByLabel('Access code', {exact:true}).fill('test-only-long-access-code');
-  await page.getByRole('button', {name:'Connect hosted AI',exact:true}).click();
+  await page.locator('.settings').getByRole('button', {name:'Connect hosted AI',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('hosted backend URL');
-  await expect(page.getByRole('button', {name:'Connect hosted AI',exact:true})).toBeEnabled();
+  await expect(page.locator('.settings').getByRole('button', {name:'Connect hosted AI',exact:true})).toBeEnabled();
 });
 test('hosted AI produces framings and answers without model downloads', async ({ page }) => {
   const requests=[];
@@ -65,7 +65,7 @@ test('hosted AI produces framings and answers without model downloads', async ({
   await page.getByRole('button', {name:'AI settings',exact:true}).click();
   await page.getByLabel('Backend URL').fill('https://example-backend.test/api/inquiry');
   await page.getByLabel('Access code', {exact:true}).fill('test-only-long-access-code');
-  await page.getByRole('button', {name:'Connect hosted AI',exact:true}).click();
+  await page.locator('.settings').getByRole('button', {name:'Connect hosted AI',exact:true}).click();
   await expect(page.getByRole('button', {name:'AI ready',exact:true})).toBeVisible();
   await page.getByLabel('Question', {exact:true}).fill('How do cities preserve belonging?');
   await page.getByRole('button', {name:'Ask →',exact:true}).click();
