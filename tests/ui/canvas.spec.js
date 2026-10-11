@@ -1,0 +1,55 @@
+import { test, expect } from '@playwright/test';
+test('manual inquiry branches, persists, and exports/imports', async ({ page }) => {
+  await page.goto('');
+  await page.getByLabel('Question', {exact:true}).fill('What should a city preserve?');
+  await page.getByRole('button', {name:'Add question →',exact:true}).click();
+  await page.getByLabel('Your own answer').fill('A city should preserve the conditions that let people belong.');
+  await page.getByRole('button', {name:'Add answer →',exact:true}).click();
+  await page.getByRole('button', {name:'Fork from here →'}).click();
+  await page.getByLabel('Question', {exact:true}).fill('Who gets to belong?');
+  await page.getByRole('button', {name:'Add question →',exact:true}).click();
+  await expect(page.locator('.node')).toHaveCount(3);
+  await page.reload();
+  await expect(page.locator('.node')).toHaveCount(3);
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', {name:'export',exact:true}).click();
+  const download = await downloadPromise;
+  const file = await download.path();
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', {name:'new',exact:true}).click();
+  await expect(page.locator('.node')).toHaveCount(0);
+  await page.locator('input[type=file]').setInputFiles(file);
+  await expect(page.locator('.node')).toHaveCount(3);
+});
+test('sample exposes preserved framings, cross-branch concepts, and tensions', async ({ page }) => {
+  await page.goto('');
+  await page.getByRole('button', {name:'Explore an example ↗'}).click();
+  await expect(page.locator('.node')).toHaveCount(6);
+  await page.locator('.node').first().click();
+  await expect(page.locator('.framing')).toHaveCount(3);
+  await page.getByRole('button', {name:'threads 3',exact:true}).click();
+  await page.locator('main').getByRole('button', {name:'access'}).click();
+  await expect(page.locator('.inspector .list-row')).toHaveCount(3);
+  await page.getByRole('button', {name:'tensions 2',exact:true}).click();
+  await page.locator('main .tension-row').first().getByRole('button', {name:'Open a branch →'}).click();
+  await expect(page.locator('.node')).toHaveCount(7);
+  await expect(page.locator('.inspector')).toContainText('Explore this tension');
+});
+test('mobile and dark theme have no document overflow or JS errors', async ({ page }) => {
+  const errors=[]; page.on('pageerror',e=>errors.push(e.message));
+  await page.setViewportSize({width:390,height:844});
+  await page.emulateMedia({colorScheme:'dark'});
+  await page.goto('');
+  await page.getByRole('button', {name:'Explore an example ↗'}).click();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({path:'qa-mobile.png',fullPage:true});
+  expect(errors).toEqual([]);
+});
+test('unsupported GPU reports a recoverable load error', async ({ page }) => {
+  await page.addInitScript(()=>Object.defineProperty(navigator,'gpu',{value:undefined}));
+  await page.goto('');
+  await page.getByRole('button', {name:'AI settings',exact:true}).click();
+  await page.getByRole('button', {name:'Download and load model'}).click();
+  await expect(page.getByRole('alert')).toContainText('needs WebGPU');
+  await expect(page.getByRole('button', {name:'Download and load model'})).toBeEnabled();
+});
