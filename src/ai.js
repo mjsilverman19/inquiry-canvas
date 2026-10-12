@@ -3,7 +3,7 @@ const ENDPOINT_STORAGE = 'inquiry-canvas-api-url';
 const ACCESS_STORAGE = 'inquiry-canvas-access';
 let connection = null;
 export function initialEndpoint() {
-  try { return localStorage.getItem(ENDPOINT_STORAGE) || import.meta.env.VITE_INQUIRY_API_URL || ''; } catch { return import.meta.env.VITE_INQUIRY_API_URL || ''; }
+  try { return localStorage.getItem(ENDPOINT_STORAGE) || import.meta.env.VITE_INQUIRY_API_URL || 'https://inquiry-canvas-api.vercel.app/api/inquiry'; } catch { return import.meta.env.VITE_INQUIRY_API_URL || 'https://inquiry-canvas-api.vercel.app/api/inquiry'; }
 }
 export function initialAccessCode() { try { return sessionStorage.getItem(ACCESS_STORAGE) || ''; } catch { return ''; } }
 export function validateEndpoint(value) {

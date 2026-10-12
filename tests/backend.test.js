@@ -42,7 +42,7 @@ test('bounds requests and refuses unsupported operations',async()=>{
 test('owner controls the model, output cap and provider endpoint',async()=>{
  let sent;
  const result=await createHandler({...defaults,fetchAI:async(url,options)=>{sent={url,...JSON.parse(options.body),authorization:options.headers.Authorization};return defaults.fetchAI();}})(request({...payload,model:'expensive-model',max_tokens:100000,url:'https://malicious.test'}));
- assert.equal(result.status,200);assert.equal(sent.model,DEFAULT_MODEL);assert.equal(sent.max_tokens,2500);assert.equal(sent.url,'https://ai-gateway.vercel.sh/v1/chat/completions');assert.equal(sent.authorization,'Bearer server-only-credential');
+ assert.equal(result.status,200);assert.equal(sent.model,DEFAULT_MODEL);assert.equal(sent.max_tokens,2500);assert.equal(sent.temperature,undefined);assert.equal(sent.reasoning_effort,'low');assert.equal(sent.url,'https://ai-gateway.vercel.sh/v1/chat/completions');assert.equal(sent.authorization,'Bearer server-only-credential');
  assert.match(sent.messages[1].content,/Prior claim/);
 });
 test('upstream failures and invalid model output never expose upstream text',async()=>{

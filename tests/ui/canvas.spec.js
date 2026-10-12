@@ -48,6 +48,7 @@ test('mobile and dark theme have no document overflow or JS errors', async ({ pa
 test('hosted setup reports a recoverable configuration error', async ({ page }) => {
   await page.goto('');
   await page.getByRole('button', {name:'AI settings',exact:true}).click();
+  await page.getByLabel('Backend URL').fill('');
   await page.getByLabel('Access code', {exact:true}).fill('test-only-long-access-code');
   await page.locator('.settings').getByRole('button', {name:'Connect hosted AI',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('hosted backend URL');
